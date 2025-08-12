@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Register - Animal NGO</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <div id="app-navbar"></div>
+
+  <main class="container">
+    <div class="card" style="max-width:720px;margin:auto;">
+      <h2>Register</h2>
+      <p class="small">Provide your details and choose a role</p>
+
+      <form id="registerForm" class="mt-4">
+        <div class="grid-2">
+          <div>
+            <div class="form-row">
+              <label for="name">Name</label>
+              <input id="name" type="text" required />
+            </div>
+            <div class="form-row">
+              <label for="email">Email</label>
+              <input id="email" type="email" required />
+            </div>
+            <div class="form-row">
+              <label for="password">Password</label>
+              <input id="password" type="password" required />
+            </div>
+            <div class="form-row">
+              <label for="role">Role</label>
+              <select id="role">
+                <option value="donor">Donor</option>
+                <option value="volunteer">Volunteer</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <div class="form-row">
+              <label for="phone">Phone number</label>
+              <input id="phone" type="text" required />
+            </div>
+            <div class="form-row">
+              <label for="address">Address</label>
+              <input id="address" type="text" required />
+            </div>
+            <div class="form-row">
+              <label for="latitude">Latitude</label>
+              <input id="latitude" type="number" step="any" required />
+            </div>
+            <div class="form-row">
+              <label for="longitude">Longitude</label>
+              <input id="longitude" type="number" step="any" required />
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:.6rem;">
+          <button class="btn" type="submit">Register</button>
+          <a class="btn ghost" href="login.html" style="margin-left:.5rem">Back to Login</a>
+        </div>
+        <div id="registerError" class="error" style="display:none"></div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('registerForm');
+      const err = document.getElementById('registerError');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        err.style.display = 'none';
+        try {
+          const payload = {
+            name: document.getElementById('name').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('password').value,
+            role: document.getElementById('role').value,
+            phone_number: document.getElementById('phone').value.trim(),
+            address: document.getElementById('address').value.trim(),
+            latitude: Number(document.getElementById('latitude').value),
+            longitude: Number(document.getElementById('longitude').value)
+          };
+
+          await apiRequest('/users/register', 'POST', payload, false);
+          // on success redirect to login
+          window.location.href = 'login.html';
+        } catch (error) {
+          showError(err, error.message || 'Registration failed');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

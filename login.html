@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Login - Animal NGO</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <div id="app-navbar"></div>
+
+  <main class="container">
+    <div class="card" style="max-width:540px;margin:auto;">
+      <h2>Login</h2>
+      <p class="small">Login with your email and password</p>
+
+      <form id="loginForm" class="mt-4">
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input id="email" type="email" required />
+        </div>
+        <div class="form-row">
+          <label for="password">Password</label>
+          <input id="password" type="password" required />
+        </div>
+
+        <div style="display:flex;gap:.5rem;align-items:center;">
+          <button class="btn" type="submit">Login</button>
+          <a href="register.html" class="btn ghost">Register</a>
+        </div>
+
+        <div id="loginError" class="error" style="display:none;margin-top:.5rem"></div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('loginForm');
+      const err = document.getElementById('loginError');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        err.style.display = 'none';
+        try {
+          const email = document.getElementById('email').value.trim();
+          const password = document.getElementById('password').value;
+          const data = await apiRequest('/users/login', 'POST', { email, password }, false);
+          // data: { token, user: { id, name, email, role } }
+          setToken(data.token);
+          setUser(data.user);
+          window.location.href = 'dashboard.html';
+        } catch (error) {
+          showError(err, error.message || 'Login failed');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

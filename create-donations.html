@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Create Donation - Animal NGO</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <div id="app-navbar"></div>
+
+  <main class="container">
+    <div class="card" style="max-width:720px;margin:auto;">
+      <h2>Create Donation Request</h2>
+      <form id="donationForm">
+        <div class="form-row">
+          <label for="title">Title</label>
+          <input id="title" type="text" required />
+        </div>
+        <div class="form-row">
+          <label for="description">Description</label>
+          <textarea id="description" required></textarea>
+        </div>
+
+        <div style="display:flex;gap:.5rem;">
+          <button class="btn" type="submit">Create</button>
+          <a class="btn ghost" href="dashboard.html">Cancel</a>
+        </div>
+
+        <div id="donationError" class="error" style="display:none"></div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth()) return;
+      const form = document.getElementById('donationForm');
+      const err = document.getElementById('donationError');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        err.style.display = 'none';
+        try {
+          const user = getUser();
+          const body = {
+            title: document.getElementById('title').value.trim(),
+            description: document.getElementById('description').value.trim(),
+            user_id: user.id  // backend accepts user_id or uses token
+          };
+          await apiRequest('/donations', 'POST', body, true);
+          window.location.href = 'donations.html';
+        } catch (error) {
+          showError(err, error.message || 'Failed to create donation');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

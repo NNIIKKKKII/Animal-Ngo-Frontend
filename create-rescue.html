@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Report Rescue - Animal NGO</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="main.js" defer></script>
+  <!-- Replace YOUR_GOOGLE_MAPS_API_KEY -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places" defer></script>
+  <script src="maps.js" defer></script>
+</head>
+<body>
+  <div id="app-navbar"></div>
+
+  <main class="container">
+    <div class="card" style="max-width:980px;margin:auto;">
+      <h2>Report Rescue Case</h2>
+
+      <form id="rescueForm">
+        <div class="form-row">
+          <label for="title">Title</label>
+          <input id="title" type="text" required />
+        </div>
+
+        <div class="form-row">
+          <label for="description">Description</label>
+          <textarea id="description" required></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>Pick location (drag marker)</label>
+          <div id="map" class="map-holder"></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-row">
+            <label for="latitude">Latitude</label>
+            <input id="latitude" type="number" step="any" required />
+          </div>
+          <div class="form-row">
+            <label for="longitude">Longitude</label>
+            <input id="longitude" type="number" step="any" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="image_url">Image URL (optional)</label>
+          <input id="image_url" type="text" placeholder="https://..." />
+        </div>
+
+        <div style="display:flex;gap:.5rem;">
+          <button class="btn" type="submit">Submit Rescue</button>
+          <a class="btn ghost" href="dashboard.html">Cancel</a>
+        </div>
+        <div id="rescueError" class="error" style="display:none"></div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // maps.js will initMap() and wire the latitude/longitude inputs
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth()) return;
+      const form = document.getElementById('rescueForm');
+      const err = document.getElementById('rescueError');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        err.style.display='none';
+        try {
+          const user = getUser();
+          const body = {
+            title: document.getElementById('title').value.trim(),
+            description: document.getElementById('description').value.trim(),
+            image_url: document.getElementById('image_url').value.trim() || null,
+            latitude: Number(document.getElementById('latitude').value),
+            longitude: Number(document.getElementById('longitude').value),
+            reporter_user_id: user.id
+          };
+          await apiRequest('/rescue', 'POST', body, true);
+          window.location.href = 'rescue-nearby.html';
+        } catch (error) {
+          showError(err, error.message || 'Failed to create rescue case');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

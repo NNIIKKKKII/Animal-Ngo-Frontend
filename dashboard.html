@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard - Animal NGO</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <div id="app-navbar"></div>
+
+  <main class="container">
+    <div class="card" id="welcomeCard">
+      <h2>Dashboard</h2>
+      <p id="welcomeText" class="small"></p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Donations</h3>
+        <p><a class="btn" href="create-donation.html">Create Donation</a>
+        <a class="btn ghost" href="donations.html" style="margin-left:.5rem">View All</a></p>
+      </div>
+
+      <div class="card" id="rescueActions">
+        <h3>Rescue</h3>
+        <p><a class="btn" href="create-rescue.html">Report Rescue</a>
+        <a class="btn ghost" href="rescue-nearby.html" style="margin-left:.5rem">Nearby Cases</a></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Your info</h3>
+      <div id="userInfo" class="small"></div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // require auth
+      if (!requireAuth()) return;
+      const user = getUser();
+      document.getElementById('welcomeText').textContent = `Hello ${user.name || 'user'} — role: ${user.role}`;
+      document.getElementById('userInfo').innerHTML = `
+        <strong>Name:</strong> ${user.name || '-'}<br/>
+        <strong>Email:</strong> ${user.email || '-'}<br/>
+        <strong>Role:</strong> ${user.role || '-'}
+      `;
+
+      // If not volunteer hide rescue actions
+      if (user.role !== 'volunteer') {
+        document.getElementById('rescueActions').style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

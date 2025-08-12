@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Nearby Rescues - Animal NGO</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="main.js" defer></script>
+  <script src="maps.js" defer></script> <!-- maps.js has map helper if needed -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places" defer></script>
+</head>
+<body>
+  <div id="app-navbar"></div>
+
+  <main class="container">
+    <div class="card">
+      <h2>Nearby Rescue Cases</h2>
+      <p class="small">We will ask for geolocation permission and query rescue cases near you (radius in km)</p>
+    </div>
+
+    <div id="map" class="map-holder card" style="margin-bottom:1rem;"></div>
+    <div class="card">
+      <h3>Cases</h3>
+      <div id="casesList" class="card-list"></div>
+      <div id="casesError" class="error" style="display:none"></div>
+    </div>
+  </main>
+
+  <script>
+    async function loadNearbyCases() {
+      const err = document.getElementById('casesError');
+      const list = document.getElementById('casesList');
+      list.innerHTML = '<p class="small">Finding location and nearby cases…</p>';
+      try {
+        const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej));
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        // radius: in kilometers as backend expects radius (default 5) -> backend multiplies by 1000
+        const radiusKm = 5;
+
+        const url = `/rescue/nearby?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&radius=${radiusKm}&limit=50`;
+        const data = await apiRequest(url, 'GET', null, true);
+        const cases = data.data || [];
+
+        // init map with centre
+        if (window.initMapSimple) window.initMapSimple({ lat, lng, markers: cases });
+
+        if (!cases.length) {
+          list.innerHTML = '<div class="card">No nearby rescue cases found.</div>';
+          return;
+        }
+
+        list.innerHTML = cases.map(c => `
+          <div class="card-item" data-id="${c.id}">
+            <h3>${escapeHtml(c.title)}</h3>
+            <p class="small">${escapeHtml(c.description)}</p>
+            <p class="small">Location: ${escapeHtml(c.latitude)}, ${escapeHtml(c.longitude)}</p>
+            <p class="small">Status: ${escapeHtml(c.status)}</p>
+            <div style="margin-top:.5rem;">
+              <button class="btn assign-btn" data-id="${c.id}">Assign to me</button>
+            </div>
+          </div>
+        `).join('');
+
+        // wire assign buttons
+        document.querySelectorAll('.assign-btn').forEach(btn => {
+          btn.addEventListener('click', async (ev) => {
+            const id = ev.currentTarget.dataset.id;
+            try {
+              await apiRequest(`/rescue/${id}/assign`, 'PUT', null, true);
+              ev.currentTarget.textContent = 'Assigned';
+              ev.currentTarget.disabled = true;
+            } catch (e) {
+              showError(err, e.message || 'Failed to assign');
+            }
+          });
+        });
+
+      } catch (error) {
+        showError(err, error.message || 'Could not load nearby cases. Allow location or login.');
+        document.getElementById('casesList').innerHTML = '';
+      }
+    }
+
+    function escapeHtml(s='') {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth()) return;
+      loadNearbyCases();
+    });
+  </script>
+</body>
+</html>

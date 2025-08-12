@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Donations - Animal NGO</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <div id="app-navbar"></div>
+  <main class="container">
+    <div class="card">
+      <h2>Donation Requests</h2>
+      <p class="small">All requests from the community</p>
+    </div>
+
+    <div id="donationList" class="card-list"></div>
+    <div id="donationError" class="error" style="display:none"></div>
+  </main>
+
+  <script>
+    async function loadDonations() {
+      const root = document.getElementById('donationList');
+      const err = document.getElementById('donationError');
+      root.innerHTML = '<p class="small">Loading…</p>';
+      try {
+        const data = await apiRequest('/donations', 'GET', null, false);
+        const donations = data.data || [];
+        if (!donations.length) {
+          root.innerHTML = '<div class="card">No donation requests yet.</div>';
+          return;
+        }
+        root.innerHTML = donations.map(d => `
+          <div class="card-item">
+            <h3>${escapeHtml(d.title || 'Untitled')}</h3>
+            <p class="small">${escapeHtml(d.description || '')}</p>
+            <p class="small">Status: ${escapeHtml(d.status || 'pending')}</p>
+          </div>
+        `).join('');
+      } catch (error) {
+        showError(err, error.message || 'Failed to load donations');
+        root.innerHTML = '';
+      }
+    }
+
+    function escapeHtml(s='') {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDonations);
+  </script>
+</body>
+</html>
